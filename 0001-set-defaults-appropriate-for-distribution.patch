@@ -1,0 +1,293 @@
+From 0a8e91ee73e39f3c8e674a25ffdae3154fccb81a Mon Sep 17 00:00:00 2001
+From: Andrew Bower <andrew@bower.uk>
+Date: Sun, 13 Aug 2023 10:56:33 +0100
+Subject: [PATCH] set defaults appropriate for distribution
+
+---
+ config/default.cfg                   | 24 ++++--------------------
+ config/freerun.cfg                   |  5 -----
+ config/many_instances.cfg            |  5 -----
+ config/pps_slave.cfg                 |  5 -----
+ config/ptp_boundary.cfg              |  5 -----
+ config/ptp_domain_bridge.cfg         |  5 -----
+ config/ptp_master_freerun.cfg        |  5 -----
+ config/ptp_master_ntp.cfg            |  5 -----
+ config/ptp_slave.cfg                 |  7 -------
+ config/ptp_slave_chrony_fallback.cfg |  5 -----
+ config/ptp_slave_multiple.cfg        |  5 -----
+ config/ptp_slave_ntp_fallback.cfg    |  5 -----
+ src/include/sfptpd_general_config.h  |  4 ++--
+ src/sfptpd_general_config.c          |  6 +++---
+ 14 files changed, 9 insertions(+), 82 deletions(-)
+
+diff --git a/config/default.cfg b/config/default.cfg
+index 5869323..bbbe6f2 100644
+--- a/config/default.cfg
++++ b/config/default.cfg
+@@ -10,7 +10,7 @@
+ # cases.
+ #
+ # This basic configuration has the following features:
+-#   - synchronises Solarflare NIC clocks to the system clock
++#   - synchronises NIC clocks to the system clock
+ #   - does not set up any remote time sources
+ #   - never adjusts the system clock (allowing co-existence with chronyd)
+ #   - logs via syslog
+@@ -31,8 +31,8 @@
+ #
+ [general]
+ 
+-# Create a freerun Synchronization Module instance.
+-sync_module freerun fr1
++# Instantiate crny Synchronization Module.
++sync_module crny crny1
+ 
+ # Specify whether messages are sent to the syslog, stderr or to a file. By default
+ # messages are sent to stderr.
+@@ -42,23 +42,7 @@ message_log syslog
+ # or to a file
+ stats_log off
+ 
+-# Never adjust the system clock. This enables co-existence with software that
+-# itself controls the system clock where this behaviour cannot yet be
+-# controlled at runtime, such as chronyd (ntpd provides a mechanism enabling it
+-# to be controlled by sfptpd).
++# Never adjust the system clock.
+ clock_readonly system
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+-#
+-# Freerun Configuration
+-#
+-[fr1]
+-
+-# Specify the clock to use as local reference by interface.
+-interface system
+-
+ # fin
+diff --git a/config/freerun.cfg b/config/freerun.cfg
+index 9cfe090..402aba0 100644
+--- a/config/freerun.cfg
++++ b/config/freerun.cfg
+@@ -23,11 +23,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # Freerun Configuration
+ #
+diff --git a/config/many_instances.cfg b/config/many_instances.cfg
+index 6dbc460..e07e483 100644
+--- a/config/many_instances.cfg
++++ b/config/many_instances.cfg
+@@ -44,11 +44,6 @@ stats_log stdout
+ # disable the feature.
+ # selection_holdoff_interval 10
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ # Configure a fallback freerun source
+ [fr1]
+ # interface eth1
+diff --git a/config/pps_slave.cfg b/config/pps_slave.cfg
+index e5093ec..07c6f23 100644
+--- a/config/pps_slave.cfg
++++ b/config/pps_slave.cfg
+@@ -41,11 +41,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # Generic PPS Configuration
+ #
+diff --git a/config/ptp_boundary.cfg b/config/ptp_boundary.cfg
+index 3d49284..f3a8f6d 100644
+--- a/config/ptp_boundary.cfg
++++ b/config/ptp_boundary.cfg
+@@ -27,11 +27,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # PTP Master Configuration
+ #
+diff --git a/config/ptp_domain_bridge.cfg b/config/ptp_domain_bridge.cfg
+index 76eb151..9204ca2 100644
+--- a/config/ptp_domain_bridge.cfg
++++ b/config/ptp_domain_bridge.cfg
+@@ -24,11 +24,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # PTP Master Configuration
+ #
+diff --git a/config/ptp_master_freerun.cfg b/config/ptp_master_freerun.cfg
+index bca5dda..5153e85 100644
+--- a/config/ptp_master_freerun.cfg
++++ b/config/ptp_master_freerun.cfg
+@@ -25,11 +25,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # Freerun Configuration
+ #
+diff --git a/config/ptp_master_ntp.cfg b/config/ptp_master_ntp.cfg
+index ed77c77..fb4136b 100644
+--- a/config/ptp_master_ntp.cfg
++++ b/config/ptp_master_ntp.cfg
+@@ -28,11 +28,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ #
+ # PTP Instance Configuration
+ #
+diff --git a/config/ptp_slave.cfg b/config/ptp_slave.cfg
+index fae1ada..d6be823 100644
+--- a/config/ptp_slave.cfg
++++ b/config/ptp_slave.cfg
+@@ -23,13 +23,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex). If enabling, watch out for
+-# NICs advertising separate clocks that are actually shared resulting in
+-# inconsistent correction or not accepting clock adjustments.
+-non_xilinx_nics off
+-
+ # In the event of a NIC reset or otherwise causing the NIC clock to read
+ # the Unix epoch time, immediately correct the NIC clock in addition to the
+ # default behaviour of preventing the wrong time from propagating.
+diff --git a/config/ptp_slave_chrony_fallback.cfg b/config/ptp_slave_chrony_fallback.cfg
+index de3cc57..cccb2fc 100644
+--- a/config/ptp_slave_chrony_fallback.cfg
++++ b/config/ptp_slave_chrony_fallback.cfg
+@@ -28,11 +28,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ # Avoid switching on transient changes because restarting chronyd is
+ # disruptive
+ selection_holdoff_interval 60
+diff --git a/config/ptp_slave_multiple.cfg b/config/ptp_slave_multiple.cfg
+index 601cb51..145d12e 100644
+--- a/config/ptp_slave_multiple.cfg
++++ b/config/ptp_slave_multiple.cfg
+@@ -23,11 +23,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ # Use automatic (default) or manual sync instance switching. Manual switching is
+ # accomplished through the sfptpdctl program.  The default setting is automatic.
+ # selection_policy automatic
+diff --git a/config/ptp_slave_ntp_fallback.cfg b/config/ptp_slave_ntp_fallback.cfg
+index eeea3f9..3d4648c 100644
+--- a/config/ptp_slave_ntp_fallback.cfg
++++ b/config/ptp_slave_ntp_fallback.cfg
+@@ -25,11 +25,6 @@ message_log stderr
+ # stats_log /local/sfptpd_stats.txt
+ stats_log stdout
+ 
+-# Specifies whether to attempt using hardware timestamps on non-Xilinx
+-# hardware. Its driver must support raw hardware timestamps and expose a PHC
+-# device adjustable via clock_adjtime (adjtimex).
+-non_xilinx_nics off
+-
+ # Specifies the trace level if the application has been built with trace enabled.
+ # Default is 0, no trace.
+ # trace_level 0
+diff --git a/src/include/sfptpd_general_config.h b/src/include/sfptpd_general_config.h
+index 8aab793..2a3ce60 100644
+--- a/src/include/sfptpd_general_config.h
++++ b/src/include/sfptpd_general_config.h
+@@ -33,8 +33,8 @@
+ #define SFPTPD_DEFAULT_CLUSTERING_GUARD_THRESHOLD  1
+ #define SFPTPD_DEFAULT_PERSISTENT_CLOCK_CORRECTION (true)
+ #define SFPTPD_DEFAULT_DISCIPLINE_ALL_CLOCKS       (true)
+-#define SFPTPD_DEFAULT_NON_SFC_NICS                (false)
+-#define SFPTPD_DEFAULT_ASSUME_ONE_PHC_PER_NIC      (true)
++#define SFPTPD_DEFAULT_NON_SFC_NICS                (true)
++#define SFPTPD_DEFAULT_ASSUME_ONE_PHC_PER_NIC      (false)
+ #define SFPTPD_DEFAULT_TEST_MODE                   (false)
+ #define SFPTPD_DEFAULT_RTC_ADJUST                  (true)
+ #define SFPTPD_DEFAULT_SELECTION_HOLDOFF_INTERVAL  10
+diff --git a/src/sfptpd_general_config.c b/src/sfptpd_general_config.c
+index 0659718..2325221 100644
+--- a/src/sfptpd_general_config.c
++++ b/src/sfptpd_general_config.c
+@@ -206,18 +206,18 @@ static const sfptpd_config_option_t config_general_options[] =
+ 		parse_persistent_clock_correction},
+ 	{"non_solarflare_nics", "<off | on>",
+ 		"Specify whether to use timestamping and hardware clock "
+-		"capabilities of non-Solarflare adapters. Disabled by default",
++		"capabilities of non-Solarflare adapters. Enabled by default",
+ 		1, SFPTPD_CONFIG_SCOPE_GLOBAL, true,
+ 		parse_non_solarflare_nics},
+ 	{"non_xilinx_nics", "<off | on>",
+ 		"Specify whether to use timestamping and hardware clock "
+-		"capabilities of non-Xilinx adapters. Disabled by default",
++		"capabilities of non-Xilinx adapters. Enabled by default",
+ 		1, SFPTPD_CONFIG_SCOPE_GLOBAL, false,
+ 		parse_non_solarflare_nics},
+ 	{"assume_one_phc_per_nic", "<off | on>",
+ 		"Specify whether multiple reported clock devices on a NIC "
+ 		"should be assumed to represent the same underlying clock. "
+-		"Enabled by default",
++		"Disabled by default",
+ 		1, SFPTPD_CONFIG_SCOPE_GLOBAL, false,
+ 		parse_assume_one_phc_per_nic},
+ 	{"avoid_efx_ioctl", "<off | on>",
+-- 
+2.41.0
+

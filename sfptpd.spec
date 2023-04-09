@@ -1,17 +1,21 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # (c) Copyright 2014-2023 Advanced Micro Devices, Inc.
 
+%global commit 8abf56055e02e90b1f5db3e913efd629b9828608
+%global short 8abf560
+
 Name: sfptpd
-Version: %{pkgversion}
+Version: 3.7.0.1006~20230813.g%{short}
 Release: 1%{?dist}
 Summary: System time sync daemon supporting PTP, NTP and 1PPS
 License: BSD-3-Clause AND BSD-2-Clause AND NTP AND ISC
-Group: System Environment/Daemons
-Source0: sfptpd-%{version}.tgz
+Source0: https://github.com/Xilinx-CNS/%{name}/archive/%{commit}.tar.gz
 Source1: sfptpd.sysusers
-URL: https://www.xilinx.com/download/drivers
-Vendor: Advanced Micro Devices, Inc.
+# Patch to customise defaults for the distribution
+Patch0: 0001-set-defaults-appropriate-for-distribution.patch
+URL: https://github.com/Xilinx-CNS/sfptpd
 BuildRequires: sed
+BuildRequires: git
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: systemd-rpm-macros
@@ -28,9 +32,9 @@ Key features are high quality timestamp filtering, bond & VLAN support and
 instantaneous & long term monitoring.
 
 %prep
-%autosetup
+%autosetup -S git -n %{name}-%{commit}
 scripts/sfptpd_versioning write %{version}
-sed -i 's,.*\(SFPTPD_USER=\).*",#\1"-u sfptpd",g' scripts/sfptpd.env
+sed -i 's,.*\(SFPTPD_USER=\).*",\1"-u sfptpd",g' scripts/sfptpd.env
 
 %build
 %make_build
@@ -92,6 +96,9 @@ make fast_test
 %ghost %attr(-,sfptpd,sfptpd) %{_localstatedir}/lib/%{name}/ptp-nodes
 
 %changelog
+* Sun Aug 13 2023 Andrew Bower <andrew@bower.uk> - 3.7.0.1006~20230813.g8abf560-1
+- package for distro
+
 * Sun Aug  6 2023 Andrew Bower <andrew.bower@amd.com> - 3.7.0.1005-1
 - add sfptpmon tool
 - add sed build dependency
